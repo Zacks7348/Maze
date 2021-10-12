@@ -1,8 +1,9 @@
 import heapq
 import pdb
 import math
+from collections import namedtuple
 
-from maze.maze import Position
+Position = namedtuple('Position', ['row', 'col'])
 
 class PriorityQueue:
     def __init__(self) -> None:

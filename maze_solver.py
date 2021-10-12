@@ -1,6 +1,6 @@
 import argparse
 
-from maze.maze import Maze, Position
+from maze.maze import Maze
 from maze.search_algorithms import solve_maze
 
 

@@ -7,8 +7,8 @@ import pdb
 from time import time
 import math
 
-from maze.maze import Maze, Position
-from maze.utils import PriorityQueue, backtrack_solution, heuristic
+from maze.maze import Maze
+from maze.utils import PriorityQueue, backtrack_solution, heuristic, Position
 
 
 class SearchAlgorithms():
@@ -58,7 +58,7 @@ def depth_first_search(maze: Maze, **kwargs):
             solution['path-cost'] = len(solution['path'])
             solution['nodes-expanded'] = len(explored)
             return solution
-        for neighbor in maze.get_neighbors(p):
+        for neighbor in maze.get_neighbors(p).values():
             if not neighbor in explored:
                 explored.add(neighbor)
                 parent[neighbor] = p
@@ -89,7 +89,7 @@ def breadth_first_search(maze: Maze, **kwargs):
     while frontier:
         p = frontier.pop(0)
         explored.add(p)
-        for neighbor in maze.get_neighbors(p):
+        for neighbor in maze.get_neighbors(p).values():
             if not neighbor in explored:
                 explored.add(neighbor)
                 parent[neighbor] = p
@@ -137,7 +137,7 @@ def uniform_cost_search(maze: Maze, **kwargs):
             solution['path-cost'] = cost
             solution['nodes-expanded'] = nodes_expanded
             return solution
-        for neighbor in maze.get_neighbors(p):
+        for neighbor in maze.get_neighbors(p).values():
             new_cost = cost+1
             if not neighbor in costs or new_cost < costs.get(neighbor, new_cost):
                 costs[neighbor] = new_cost
@@ -172,7 +172,7 @@ def astar_search(maze: Maze, **kwargs):
             solution['path-cost'] = costs[p]
             solution['nodes-expanded'] = nodes_expanded
             return solution
-        for neighbor in maze.get_neighbors(p):
+        for neighbor in maze.get_neighbors(p).values():
             new_cost = costs[p] + 1
             if not neighbor in costs or new_cost < costs.get(neighbor, new_cost):
                 nodes_expanded += 1
