@@ -1,264 +1,254 @@
 from __future__ import annotations
-
-from typing import List, Union
+from enum import Enum
+from typing import List
 from collections import namedtuple
-from random import randint, choice
+import random
 import pdb
 
-from maze.utils import Position
+
+class CellType(Enum):
+    WALL = 0
+    PASSAGE = 1
+    START = 2
+    FINISH = 3
 
 
-class Movement():
-    UP = 'UP'
-    DOWN = 'DOWN'
-    LEFT = 'LEFT'
-    RIGHT = 'RIGHT'
+Cell = namedtuple('Cell', ['row', 'col'])
 
 
-class Maze():
-    """
-    Represents a maze 
-    """
+class Maze:
 
-    def __init__(self, maze: List[List[str]] = None, wall_char: str = '%',
-                 passage_char: str = ' ', start_char: str = 'S',
-                 finish_char: str = 'F') -> None:
+    def __init__(self, maze: List[List[CellType]], **kwargs) -> None:
         """
-        Create a maze 
+        Create a :class:`Maze` object given a 2D list of CellTypes
 
         Parameters
         ----------
-        maze: List[List[str]], default=None
-            A 2D list of characters representing a maze
+        maze: List[List[CellType]]
+            a 2D list of CellTypes
         """
-        self.wall_char = wall_char
-        self.passage_char = passage_char
-        self.start_char = start_char
-        self.finish_char = finish_char
-        self.start_pos: Position = None
-        self.finish_pos: Position = None
-        self.maze: List[List[str]] = maze
+
+        self.maze = maze
+
+        self.wall_char = kwargs.pop('wall_char', '%')
+        self.passage_char = kwargs.pop('passage_char', ' ')
+        self.start_char = kwargs.pop('start_char', 'S')
+        self.finish_char = kwargs.pop('finish_char', 'F')
+
+        self.start_pos = None
+        self.finish_pos = None
 
     @classmethod
     def from_file(cls, filename: str, **kwargs) -> Maze:
         """
-        Return a :class:`Maze` object from a file
+        Create a :class:`Maze` object from a txt file
 
-        Keyword arguments are sent to the :class:`Maze` constructor
+        Keyword arguments are send to the :class:`Maze` constructor
+
+        Parameters
+        ----------
+        filename: str
+            The name of the file to read
+
         """
-
-        self = cls(maze=[], **kwargs)
+        self = cls([], **kwargs)
         with open(filename, 'r') as f:
             for row, line in enumerate(f.readlines()):
                 cells = []
                 for col, c in enumerate(line):
-                    p = Position(row, col)
-                    if c == self.start_char:
-                        self.start_pos = p
+                    if c == self.wall_char:
+                        cells.append(CellType.WALL)
+                    elif c == self.passage_char:
+                        cells.append(CellType.PASSAGE)
+                    elif c == self.start_char:
+                        self.start_pos = Cell(row, col)
+                        cells.append(CellType.START)
                     elif c == self.finish_char:
-                        self.finish_pos = p
+                        self.finish_pos = Cell(row, col)
+                        cells.append(CellType.FINISH)
                     elif c == '\n':
                         break
-                    cells.append(c)
+                    else:
+                        raise ValueError(f'Invalid character: {c}')
                 self.maze.append(cells)
         return self
 
     @classmethod
     def generate(cls, method: str = 'rdfs', **kwargs) -> Maze:
         """
-        Return a :class:`Maze` object by randomly generating a maze
+        Create a :class:`Maze` object with a randomly generated maze
 
+        Keyword arguments are sent to the :class:`Maze` constructor
+        and to the generator function
+
+        Parameters
+        ----------
+        method: str, default='rdfs'
+            The method to use for generation
         """
-        self = cls()
-        height = kwargs.pop('height', 10)
-        width = kwargs.pop('width', 10)
+        self = cls([], **kwargs)
 
         if method == 'rdfs':
-            rdfs(self, height=height, width=width, **kwargs)
+            rdfs(self, **kwargs)
+        self.set(self.start_pos, CellType.START)
+        self.set(self.finish_pos, CellType.FINISH)
         return self
 
-    def get(self, p: Position) -> str:
+    def get(self, c: Cell) -> CellType:
         """
-        Return the character at p
+        Shortcut for getting the value of a cell
         """
-        if not self.is_valid_position(p):
-            raise ValueError(f'Invalid position: {p}')
-        return self.maze[p.row][p.col]
+        if not self.is_valid_cell(c):
+            raise ValueError(f'Invalid Cell: {c}')
+        return self.maze[c.row][c.col]
 
-    def set(self, p: Position, c: str) -> None:
+    def set(self, c: Cell, val: CellType) -> None:
         """
-        Set the character in the maze to c at p
+        Shortcut for setting the value of a cell
         """
-        if not self.is_valid_position(p):
-            raise ValueError(f'Invalid position: {p}')
-        self.maze[p.row][p.col] = c
+        if not self.is_valid_cell(c):
+            raise ValueError(f'Invalid Cell: {c}')
+        self.maze[c.row][c.col] = val
 
-    def get_neighbor_positions(self, position: Position) -> dict:
+    def is_valid_cell(self, c: Cell) -> bool:
         """
-        Returns a dictionary of adjacent positions
+        Returns True if the cell is in the maze
         """
-        if not self.is_valid_position(position):
-            raise ValueError('Invalid maze position: {}'.format(position))
-        res = {}
-        # UP
-        p = Position(position.row-1, position.col)
-        if self.is_valid_position(p):
-            res[Movement.UP] = p
-        # DOWN
-        p = Position(position.row+1, position.col)
-        if self.is_valid_position(p):
-            res[Movement.DOWN] = p
-        # LEFT
-        p = Position(position.row, position.col-1)
-        if self.is_valid_position(p):
-            res[Movement.LEFT] = p
-        # RIGHT
-        p = Position(position.row, position.col+1)
-        if self.is_valid_position(p):
-            res[Movement.RIGHT] = p
+        if not c:
+            return False
+        return (0 <= c.row < len(self.maze)) and (0 <= c.col < len(self.maze[0]))
+
+    def is_passage(self, c: Cell) -> bool:
+        """
+        Returns True if the cell is a passage
+        """
+        return self.get(c) != CellType.WALL
+
+    def is_wall(self, c: Cell) -> bool:
+        """
+        Returns True if the cell is a wall
+        """
+        return self.get(c) == CellType.WALL
+
+    def get_neighboring_cells(self, c: Cell, d: int = 1) -> List[Cell]:
+        """
+        Returns a list of :class:`Cell` objects that are neighbors to c
+
+        Parameters
+        ----------
+        c: Cell
+            The cell whose neighbors we are looking for
+        d: int, default=1
+            The distance to look for neighbors
+        """
+        if d <= 0:
+            raise ValueError(f'Invalid distance: {d}')
+        deltas = [(d, 0), (-1*d, 0), (0, d), (0, -1*d)]
+        res = []
+
+        for dr, dc in deltas:
+            tmp = Cell(c.row+dr, c.col+dc)
+            if self.is_valid_cell(tmp):
+                res.append(tmp)
         return res
 
-
-    def get_neighbors(self, position: Position) -> dict:
+    def get_neighboring_walls(self, c: Cell, d: int = 1) -> List[Cell]:
         """
-        Shortcut for getting all adjacent passage positions
+        Shortcut for filtering the result of :method:`get_neighboring_cells` to
+        just walls
         """
-        return {d: p for d, p in self.get_neighbor_positions(position).items() if self.is_passage(p)}
+        return [n for n in self.get_neighboring_cells(c, d) if self.is_wall(n)]
 
-    def get_neighbor_walls(self, position: Position) -> dict:
+    def get_neighboring_passages(self, c: Cell, d: int = 1) -> List[Cell]:
         """
-        Shortcut for getting all adjacent wall positions
+        Shortcut for filtering the result of :method:`get_neighboring_cells` to
+        just passages
         """
-        return {d: p for d, p in self.get_neighbor_positions(position).items() if self.is_wall(p)}
+        return [n for n in self.get_neighboring_cells(c, d) if self.is_passage(n)]
 
-    def is_valid_position(self, position: Position) -> bool:
-        if not position: 
-            return False
-        if not 0 <= position.row < len(self.maze):
-            return False
-        if not 0 <= position.col < len(self.maze[0]):
-            return False
-        return True
-
-    def is_passage(self, position: Position) -> bool:
-        return self.maze[position.row][position.col] != self.wall_char
-    
-    def is_wall(self, position: Position) -> bool:
-        return self.maze[position.row][position.col] == self.wall_char
-
-    def change_walls(self, wall_char: str) -> None:
+    def to_file(self, filename: str) -> None:
         """
-        Change the character representing walls in the maze
-        """
-
-        self.__replace_chars(self.wall_char, wall_char)
-        self.wall_char = wall_char
-
-    def change_passage_char(self, empty_char: str) -> None:
-        """
-        Change the character representing passages in the maze
-        """
-
-        self.__replace_chars(self.passage_char, empty_char)
-        self.passage_char = empty_char
-
-    def change_start_char(self, start_char) -> None:
-        if self.start_char == start_char:
-            return
-        self.start_char = start_char
-        self.maze[self.start_pos.row][self.start_pos.col] = self.start_char
-
-    def change_finish_char(self, finish_char) -> None:
-        if self.finish_char == finish_char:
-            return
-        self.finish_char = finish_char
-        self.maze[self.finish_pos.row][self.finish_pos.col] = self.finish_char
-
-    def to_txt(self, filename: str) -> None:
-        """
-        Dumps the maze into a .txt file
+        Write the maze to a txt file
 
         Parameters
         ----------
         filename: str
-            The file to dump to
+            The name of the file to write to. If the file does not exist one
+            will be created
         """
         with open(filename, 'w') as f:
-            for row in self.maze:
-                f.write(''.join(row)+'\n')
-
-    def reset(self) -> None:
-        """
-        Reset the maze back to its initial state. 
-        """
-        for i in range(len(self.maze)):
-            for j in range(len(self.maze[0])):
-                if not self.maze[i][j] in (self.wall_char, self.passage_char,
-                                           self.start_char, self.finish_char):
-                    self.maze[i][j] = self.passage_char
-
-    def __replace_chars(self, old: str, new_: str) -> None:
-        if old == new_:
-            return
-        for i in range(len(self.maze)):
-            for j in range(len(self.maze[0])):
-                if self.maze[i][j] == old:
-                    self.maze[i][j] = new_
+            f.write(self.__str__())
 
     def __str__(self) -> str:
         output = ''
+        maps = {
+            CellType.PASSAGE: self.passage_char,
+            CellType.WALL: self.wall_char,
+            CellType.START: self.start_char,
+            CellType.FINISH: self.finish_char}
         for row in self.maze:
-            output += ''.join(row) + '\n'
+            output += ''.join([maps[c] for c in row]) + '\n'
         return output
 
-def __opposite(p: Position, parent: Position) -> Position:
+# ------------------------------------------------------------------------
+# MAZE GENERATION ALGORITHMS
+# ------------------------------------------------------------------------
+
+
+def random_cell(max_row: int, max_col: int, is_odd: bool = False):
+    row = random.randint(0, max_row-1)
+    while is_odd and row % 2 == 0:
+        row = random.randint(0, max_row-1)
+    col = random.randint(0, max_col-1)
+    while is_odd and col % 2 == 0:
+        col = random.randint(0, max_col-1)
+    return Cell(row, col)
+
+
+def rdfs(maze: Maze, **kwargs) -> None:
     """
-    Returns the opposite position given p and it's parent
+    Generate a maze using Randomized Depth-First Search
     """
 
-    if p.row == parent.row:
-        return Position(p.row, p.col+(p.col-parent.col))
-    if p.col == parent.col:
-        return Position(p.row+(p.row-parent.row), p.col)
+    height = kwargs.pop('height', 25)
+    if height % 2 == 0:
+        raise ValueError('Height must be odd!')
+    width = kwargs.pop('width', 55)
+    if width % 2 == 0:
+        raise ValueError('Width must be odd!')
+    frontier = []  # Stack
 
-def rdfs(maze: Maze, height: int=10, width: int=10, **kwargs):
-    """
-    Generates a maze using Randomized Depth-First Search
-    """
+    # Initialize maze as a grid of walls
+    maze.maze = [[CellType.WALL for _ in range(
+        width-2)] for _ in range(height-2)]
 
-    frontier = [] # Acting as a stack
-    explored = set()
-
-    maze.maze = [[maze.wall_char for _ in range(width)] for _ in range(height)]
-    
-    start = Position(randint(0, height-1), randint(0, width-1))
-    maze.set(start, maze.passage_char)
-    explored.add(start)
-    frontier.append(start)
+    # Randomly choose starting point
+    maze.start_pos = random_cell(height, width, is_odd=True)
+    frontier.append(maze.start_pos)
 
     while frontier:
-        print(maze)
-        pdb.set_trace()
-        p = frontier.pop()
-        maze.set(p, maze.passage_char)
-        neighbors = maze.get_neighbor_positions(p).values()
-        unvisited = [n for n in neighbors if not n in explored]
-        if unvisited:
-            frontier.append(p)
-            un = choice(unvisited)
-            maze.set(un, maze.passage_char)
-            explored.add(un)
-            frontier.append(un)
+        cell = frontier[-1]
+        neighbors = maze.get_neighboring_walls(cell, d=2)
+        if neighbors:
+            n = random.choice(neighbors)
+            maze.set(cell, CellType.PASSAGE)
+            maze.set(n, CellType.PASSAGE)
+            middle = None
+            if cell.row == n.row:
+                middle = Cell(cell.row, max(cell.col, n.col)-1)
+            else:
+                middle = Cell(max(cell.row, n.row)-1, cell.col)
+            maze.set(middle, CellType.PASSAGE)
+            frontier.append(n)
+        else:
+            frontier.pop()
 
 
-
-
-
-
-
-
-
+    maze.finish_pos = random_cell(height, width, is_odd=True)
+    while maze.is_wall(maze.finish_pos) and maze.finish_pos == maze.start_pos:
+        maze.finish_pos = random_cell(height, width, is_odd=True)
 
 if __name__ == '__main__':
-    maze = Maze.from_random(height=5, width=10)
-    print(maze)
+    #m = Maze.from_file('tests/Maze1.txt')
+    m = Maze.generate(height=35, width=101)
+    m.to_file('foo.txt')
