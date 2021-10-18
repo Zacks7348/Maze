@@ -87,11 +87,14 @@ class Maze:
             The method to use for generation
         """
         self = cls([], **kwargs)
+        gen_methods = {
+            'rdfs': rdfs,
+            'rpa': rpa
+        }
 
-        if method == 'rdfs':
-            rdfs(self, **kwargs)
-        self.set(self.start_pos, CellType.START)
-        self.set(self.finish_pos, CellType.FINISH)
+        gen_methods[method](self, **kwargs)
+        #self.set(self.start_pos, CellType.START)
+        #self.set(self.finish_pos, CellType.FINISH)
         return self
 
     def get(self, c: Cell) -> CellType:
@@ -204,6 +207,19 @@ def random_cell(max_row: int, max_col: int, is_odd: bool = False):
         col = random.randint(0, max_col-1)
     return Cell(row, col)
 
+def opposite_cell(cell: Cell, n: Cell):
+    dr = cell.row - n.row
+    row = dr + min(cell.row, n.row) if dr < 0 else dr + max(cell.row, n.row)
+    dc = cell.col - n.col
+    col = dc + min(cell.col, n.col) if dc < 0 else dc + max(cell.col, n.col)
+    return Cell(row, col)
+
+def middle_cell(cell: Cell, n: Cell):
+    if cell.row == n.row:
+        return Cell(cell.row, max(cell.col, n.col)-1)
+    else:
+        return Cell(max(cell.row, n.row)-1, cell.col)
+
 
 def rdfs(maze: Maze, **kwargs) -> None:
     """
@@ -220,7 +236,7 @@ def rdfs(maze: Maze, **kwargs) -> None:
 
     # Initialize maze as a grid of walls
     maze.maze = [[CellType.WALL for _ in range(
-        width-2)] for _ in range(height-2)]
+        width)] for _ in range(height)]
 
     # Randomly choose starting point
     maze.start_pos = random_cell(height, width, is_odd=True)
@@ -240,6 +256,8 @@ def rdfs(maze: Maze, **kwargs) -> None:
                 middle = Cell(max(cell.row, n.row)-1, cell.col)
             maze.set(middle, CellType.PASSAGE)
             frontier.append(n)
+            print(maze)
+            for _ in range(10000000): pass
         else:
             frontier.pop()
 
@@ -248,7 +266,78 @@ def rdfs(maze: Maze, **kwargs) -> None:
     while maze.is_wall(maze.finish_pos) and maze.finish_pos == maze.start_pos:
         maze.finish_pos = random_cell(height, width, is_odd=True)
 
+def rpa(maze: Maze, **kwargs) -> None:
+    """
+    Generate a maze using Randomized Prim's Algorithm
+    """
+
+    height = kwargs.pop('height', 25)
+    if height % 2 == 0:
+        raise ValueError('Height must be odd!')
+    width = kwargs.pop('width', 55)
+    if width % 2 == 0:
+        raise ValueError('Width must be odd!')
+    
+    frontier = []
+    frontier_set = set()
+
+
+    # Initialize maze as a grid of walls
+    maze.maze = [[CellType.WALL for _ in range(
+        width)] for _ in range(height)]
+    
+    # Randomly choose starting point
+    maze.start_pos = random_cell(height-1, width-1, is_odd=True)
+    maze.set(maze.start_pos, CellType.PASSAGE)
+
+    for n in maze.get_neighboring_walls(maze.start_pos, d=2):
+        frontier.append(n)
+        frontier_set.add(n)
+
+    while frontier:
+        print(maze)
+        for _ in range(1000000): pass
+        #pdb.set_trace()
+        wall = frontier.pop(random.randint(0, len(frontier)-1))
+        frontier_set.remove(wall)
+        neighbors = maze.get_neighboring_cells(wall, d=2)
+        random.shuffle(neighbors)
+        for n in neighbors:
+            if maze.is_passage(n):
+                #pdb.set_trace()
+                o = opposite_cell(wall, n)
+                if maze.is_valid_cell(o):
+                    if maze.is_wall(o):
+                        #pdb.set_trace()
+                        maze.set(wall, CellType.PASSAGE)
+                        maze.set(n, CellType.PASSAGE)
+                        maze.set(middle_cell(wall, n), CellType.PASSAGE)
+                        for nn in maze.get_neighboring_walls(wall, d=2):
+                            #pdb.set_trace()
+                            if not nn in frontier_set:
+                                frontier.append(nn)
+                                frontier_set.add(nn)
+                        break
+                else:
+                    #pdb.set_trace()
+                    maze.set(wall, CellType.PASSAGE)
+                    maze.set(n, CellType.PASSAGE)
+                    maze.set(middle_cell(wall, n), CellType.PASSAGE)
+                    for nn in maze.get_neighboring_walls(wall, d=2):
+                        #pdb.set_trace()
+                        if not nn in frontier_set:
+                            frontier.append(nn)
+                            frontier_set.add(nn)
+                    break
+        
+        
+
+
+
+
 if __name__ == '__main__':
     #m = Maze.from_file('tests/Maze1.txt')
-    m = Maze.generate(height=35, width=101)
-    m.to_file('foo.txt')
+    m = Maze.generate(method='rpa', height=55, width=105)
+    # c = Cell(3, 5)
+    # n = Cell(5, 5)
+    # print(opposite_cell(c, n))
