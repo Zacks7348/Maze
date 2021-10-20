@@ -96,6 +96,14 @@ class Maze:
         #self.set(self.start_pos, CellType.START)
         #self.set(self.finish_pos, CellType.FINISH)
         return self
+    
+    @classmethod
+    def empty(cls, **kwargs) -> Maze:
+        self = cls(None, **kwargs)
+        height = kwargs.pop('height', 75)
+        width = kwargs.pop('width', 105)
+        self.maze = [[CellType.PASSAGE for _ in range(width)] for _ in range(height)]
+        return self
 
     def get(self, c: Cell) -> CellType:
         """
@@ -181,6 +189,14 @@ class Maze:
         """
         with open(filename, 'w') as f:
             f.write(self.__str__())
+    
+    @property
+    def height(self):
+        return len(self.maze)
+    
+    @property
+    def width(self):
+        return len(self.maze[0])
 
     def __str__(self) -> str:
         output = ''
@@ -296,7 +312,6 @@ def rpa(maze: Maze, **kwargs) -> None:
 
     while frontier:
         print(maze)
-        for _ in range(1000000): pass
         #pdb.set_trace()
         wall = frontier.pop(random.randint(0, len(frontier)-1))
         frontier_set.remove(wall)
