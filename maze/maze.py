@@ -71,13 +71,14 @@ class Maze:
                         raise ValueError(f'Invalid character: {c}')
                 self.maze.append(cells)
         return self
-    
+
     @classmethod
     def empty(cls, **kwargs) -> Maze:
         self = cls(None, **kwargs)
         height = kwargs.pop('height', 75)
         width = kwargs.pop('width', 105)
-        self.maze = [[CellType.PASSAGE for _ in range(width)] for _ in range(height)]
+        self.maze = [[CellType.PASSAGE for _ in range(
+            width)] for _ in range(height)]
         return self
 
     def get(self, c: Cell) -> CellType:
@@ -152,7 +153,6 @@ class Maze:
         """
         return [n for n in self.get_neighboring_cells(c, d) if self.is_passage(n)]
 
-
     def to_file(self, filename: str) -> None:
         """
         Write the maze to a txt file
@@ -165,11 +165,11 @@ class Maze:
         """
         with open(filename, 'w') as f:
             f.write(self.__str__())
-    
+
     @property
     def height(self):
         return len(self.maze)
-    
+
     @property
     def width(self):
         return len(self.maze[0])
@@ -184,8 +184,8 @@ class Maze:
         for row in self.maze:
             output += ''.join([maps[c] for c in row]) + '\n'
         return output
-        
-        
+
+
 class MazeGenerator:
     """
     Class used to generate a :class:`Maze` object.
@@ -199,7 +199,7 @@ class MazeGenerator:
         self.step_mode = False
         self.frontier = None
         self.finished = False
-    
+
     def randomized_finish(self):
         """
         Randomly choose finish
@@ -207,9 +207,10 @@ class MazeGenerator:
 
         f = self.__random_cell(self.maze.height, self.maze.width, is_odd=True)
         while self.maze.is_wall(f):
-            f = self.__random_cell(self.maze.height, self.maze.width, is_odd=True)
+            f = self.__random_cell(
+                self.maze.height, self.maze.width, is_odd=True)
         self.maze.finish_pos = f
-    
+
     def rdfs(self, **kwargs) -> None:
         """
         Generate a maze using Randomized Depth-First Search
@@ -239,7 +240,7 @@ class MazeGenerator:
             return
         while not self.step():
             pass
-    
+
     def rpa(self, **kwargs) -> None:
         self.method = 'rpa'
         height = kwargs.pop('height', 25)
@@ -248,7 +249,7 @@ class MazeGenerator:
         width = kwargs.pop('width', 55)
         if width % 2 == 0:
             raise ValueError('Width must be odd!')
-        
+
         # Initialize maze as a grid of walls
         m = [[CellType.WALL for _ in range(
             width)] for _ in range(height)]
@@ -257,7 +258,8 @@ class MazeGenerator:
         self.frontier = []
         self.frontier_set = set()
 
-        self.maze.start_pos = self.__random_cell(height-1, width-1, is_odd=True)
+        self.maze.start_pos = self.__random_cell(
+            height-1, width-1, is_odd=True)
         self.maze.set(self.maze.start_pos, CellType.PASSAGE)
         for n in self.maze.get_neighboring_walls(self.maze.start_pos, d=2):
             self.frontier.append(n)
@@ -269,7 +271,6 @@ class MazeGenerator:
         while not self.step():
             pass
 
-    
     def step(self) -> List[Cell]:
         """
         Function for stepping through the generation process.
@@ -283,7 +284,7 @@ class MazeGenerator:
             return self.__rdfs_step()
         if self.method == 'rpa':
             return self.__rpa_step()
-    
+
     def __rdfs_step(self) -> List[Cell]:
         if not self.frontier:
             # Finished
@@ -302,7 +303,7 @@ class MazeGenerator:
         else:
             self.frontier.pop()
         return None
-    
+
     def __rpa_step(self):
 
         def add(c1, c2, c3):
@@ -335,7 +336,6 @@ class MazeGenerator:
                     add(wall, middle, n)
                     return (wall, middle, n)
 
-
     def __random_cell(self, max_row: int, max_col: int, is_odd: bool = False):
         row = random.randint(0, max_row-1)
         while is_odd and row % 2 == 0:
@@ -349,15 +349,15 @@ class MazeGenerator:
         if c1.row == c2.row:
             return Cell(c1.row, max(c1.col, c2.col)-1)
         return Cell(max(c1.row, c2.row)-1, c1.col)
-    
+
     def __opposite_cell(self, cell: Cell, n: Cell):
         dr = cell.row - n.row
-        row = dr + min(cell.row, n.row) if dr < 0 else dr + max(cell.row, n.row)
+        row = dr + min(cell.row, n.row) if dr < 0 else dr + \
+            max(cell.row, n.row)
         dc = cell.col - n.col
-        col = dc + min(cell.col, n.col) if dc < 0 else dc + max(cell.col, n.col)
+        col = dc + min(cell.col, n.col) if dc < 0 else dc + \
+            max(cell.col, n.col)
         return Cell(row, col)
-
-
 
 
 if __name__ == '__main__':

@@ -24,7 +24,7 @@ class MainMenu(tk.Menu):
         self.wait_window(g)
         if not g.generate:
             return
-        self.maze.generate(g.method, g.height, g.width)
+        self.maze.generate(g.method, g.height, g.width, g.loop)
 
     def on_solve(self):
         s = SolveWindow(self)
@@ -58,6 +58,7 @@ class GenerateWindow(tk.Toplevel):
         self.method = None
         self.height = None
         self.width = None
+        self.loop = None
         super().__init__(master, **kwargs)
         self.resizable(False, False)
         self.title('Generate Maze')
@@ -75,6 +76,9 @@ class GenerateWindow(tk.Toplevel):
         self.width_label = tk.Label(self, text='Maze Width')
         self.width_input = tk.Entry(self)
         self.width_input.insert(0, 105)
+        self.loop_label = tk.Label(self, text='Loop Chance')
+        self.loop_input = tk.Entry(self)
+        self.loop_input.insert(0, 0)
         self.help_button = tk.Button(self, text='Help')
         self.gen_button = tk.Button(
             self, text='Generate', command=self.on_generate)
@@ -88,9 +92,11 @@ class GenerateWindow(tk.Toplevel):
         self.height_input.grid(row=1, column=1)
         self.width_label.grid(row=2, column=0)
         self.width_input.grid(row=2, column=1)
-        self.cancel_button.grid(row=3, column=0)
-        self.gen_button.grid(row=3, column=1)
-        self.help_button.grid(row=4, column=0, columnspan=2)
+        self.loop_label.grid(row=3, column=0)
+        self.loop_input.grid(row=3, column=1)
+        self.cancel_button.grid(row=4, column=0)
+        self.gen_button.grid(row=4, column=1)
+        self.help_button.grid(row=5, column=0, columnspan=2)
 
         self.grab_set()
 
@@ -104,6 +110,10 @@ class GenerateWindow(tk.Toplevel):
             self.width = int(self.width_input.get())
         except:
             raise ValueError('Expected integer for width')
+        try:
+            self.loop = float(self.loop_input.get())
+        except:
+            raise ValueError('Expected float for loop chance')
         self.generate = True
         self.destroy()
 

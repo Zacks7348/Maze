@@ -18,6 +18,7 @@ class MazeCanvas(tk.Canvas):
         self.margin = kwargs.pop('margin', 20)
         self.height = kwargs.get('height')
         self.width = kwargs.get('width')
+        self.console = kwargs.pop('console', None)
         self.maze: Maze = None
 
         self.row_lines = []
@@ -32,8 +33,12 @@ class MazeCanvas(tk.Canvas):
         # Init UI
         self.__draw_border()
 
-    def generate(self, method, height, width):
+    def generate(self, method, height, width, loop):
+        self.console.clear()
+        self.console.info(f'Generating maze using {method} method...')
+        self.console.info('Clearing board...')
         self.__clear_cells()
+        self.console.info('Initialzing generator...')
         if method == MazeGenMethods.RDFS:
             g = RDFSMazeGenerator(height=height, width=width, step=True)
         elif method == MazeGenMethods.RPA:
@@ -41,20 +46,33 @@ class MazeCanvas(tk.Canvas):
         else:
             raise ValueError('Invalid method')
         self.maze = g.maze
+        self.console.info(f'Drawing initial maze (hxw) ({height}x{width})...')
         self.__draw_maze()
         self.__draw_cells()
 
+        self.console.info('Generating...')
         while not g.finished:
             cells = g.step()
             if cells:
                 self.__update_cells(cells)
             self.update()
         
+        self.console.info('Finished!')
+        self.console.info('Drawing start and finish...')
         g.randomized_finish()
         self.__draw_cell(self.maze.start_pos)
         self.__draw_cell(self.maze.finish_pos)
+        self.update()
+        self.console.info('Loopifying maze...')
+        np = g.loopify(chance=loop)
+        self.__update_cells(np)
+        self.update()
+        self.console.info('Maze generated!')
+
 
     def solve(self, method):
+        self.console.info(f'Solving maze using {method} method...')
+        self.console.info('Initialzing search algorithm...')
         self.__clear_traversal_cells()
         self.__clear_solution_cells()
         if method == MazeSolverMethods.DFS:
@@ -68,6 +86,7 @@ class MazeCanvas(tk.Canvas):
         else:
             raise ValueError('Invalid method')
 
+        self.console.info('Solving maze...')
         while not s.finished:
             cells = s.step()
             if cells:
@@ -76,12 +95,21 @@ class MazeCanvas(tk.Canvas):
                         x1, y1, x2, y2 = self.__cell_2_coords(c)
                         self.traversed_cells.append(self.create_rectangle(x1, y1, x2, y2, fill='yellow'))
                 self.update()
+        self.console.info('Search algorithm finished!')
         if s.solution:
+            self.console.info('Found a solution!')
+            self.console.info('Drawing solution...')
             for c in s.solution:
                 if c != self.maze.start_pos and c != self.maze.finish_pos:
                     x1, y1, x2, y2 = self.__cell_2_coords(c)
                     self.solution.append(self.create_rectangle(x1, y1, x2, y2, fill='blue'))
                     self.update()
+            self.console.info('Done!')
+            self.console.info('Search results:')
+            self.console.info(f'  Nodes Expanded: {s.nodes_expanded}')
+            self.console.info(f'  Solution Cost: {s.solution_cost}')
+        else:
+            self.console.info('No solution found!')
 
 
     def __draw_border(self):
@@ -143,6 +171,7 @@ class MazeCanvas(tk.Canvas):
             self.delete(c)
         self.__clear_traversal_cells()
         self.__clear_solution_cells()
+        self.update()
     
     def __clear_traversal_cells(self):
         for c in self.traversed_cells:

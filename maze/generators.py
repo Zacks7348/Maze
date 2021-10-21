@@ -10,6 +10,12 @@ class MazeGenerator:
     def __init__(self, **kwargs) -> None:
         self.maze: Maze = None
         self.step_mode = kwargs.pop('step', False)
+        self.height = kwargs.pop('height', 105)
+        if self.height % 2 == 0:
+            raise ValueError('Maze height must be odd!')
+        self.width = kwargs.pop('width', 105)
+        if self.width % 2 == 0:
+            raise ValueError('Maze width must be odd!')
         self.frontier = None
         self.finished = False
 
@@ -43,6 +49,18 @@ class MazeGenerator:
         dc = cell.col - n.col
         col = dc + min(cell.col, n.col) if dc < 0 else dc + max(cell.col, n.col)
         return Cell(row, col)
+    
+    def loopify(self, chance=0.1):
+        if not 0 <= chance <= 1:
+            raise ValueError('Loop chance must be a number between 0 and 1!')
+        changed = []
+        for i in range(1, self.maze.height-1):
+            for j in range(1, self.maze.width-1):
+                c = Cell(i, j)
+                if self.maze.is_wall(c) and random.random() < chance:
+                    self.maze.set(c, CellType.PASSAGE)
+                    changed.append(c)
+        return changed
 
 class RDFSMazeGenerator(MazeGenerator):
     """
@@ -143,19 +161,6 @@ class RPAMazeGenerator(MazeGenerator):
         wall = self.frontier.pop(random.randint(0, len(self.frontier)-1))
         self.frontier_set.remove(wall)
         neighbors = self.maze.get_neighboring_cells(wall, d=2)
-        # random.shuffle(neighbors)
-        # for n in neighbors:
-        #     if self.maze.is_passage(n):
-        #         o = self.opposite_cell(wall, n)
-        #         if self.maze.is_valid_cell(o):
-        #             if self.maze.is_wall(o):
-        #                 middle = self.middle_cell(wall, n)
-        #                 add(wall, middle, n)
-        #                 return (wall, middle, n)
-        #         else:
-        #             middle = self.middle_cell(wall, n)
-        #             add(wall, middle, n)
-        #             return (wall, middle, n)
         random.shuffle(neighbors)
         for n in neighbors:
             if self.maze.is_passage(n):
