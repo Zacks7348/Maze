@@ -1,4 +1,5 @@
-from gui import start
+from gui import App
 
 if __name__ == '__main__':
-    start()
+    app = App()
+    app.run()

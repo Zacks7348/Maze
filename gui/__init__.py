@@ -1,1 +1,1 @@
-from .maze_frame import start
+from .app import App
