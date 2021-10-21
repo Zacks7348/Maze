@@ -4,6 +4,7 @@ from tkinter import ttk
 from gui.maze_frame import MazeCanvas
 from maze import MazeGenMethods, MazeSolverMethods
 
+
 class MainMenu(tk.Menu):
     def __init__(self, master: tk.Tk, maze: MazeCanvas):
         self.maze = maze
@@ -17,21 +18,21 @@ class MainMenu(tk.Menu):
         self.add_cascade(label='Edit', menu=self.edit_menu)
         self.add_command(label='Generate', command=self.on_generate)
         self.add_command(label='Solve', command=self.on_solve)
-    
+
     def on_generate(self):
         g = GenerateWindow(self)
         self.wait_window(g)
         if not g.generate:
             return
         self.maze.generate(g.method, g.height, g.width)
-    
+
     def on_solve(self):
         s = SolveWindow(self)
         self.wait_window(s)
         if not s.solve:
             return
         self.maze.solve(s.method)
-    
+
 
 class FileMenu(tk.Menu):
     def __init__(self, master):
@@ -41,9 +42,10 @@ class FileMenu(tk.Menu):
         self.add_command(label='Settings')
         self.add_separator()
         self.add_command(label='Exit', command=self.on_exit)
-    
+
     def on_exit(self):
         self.master.destroy()
+
 
 class EditMenu(tk.Menu):
     def __init__(self, master):
@@ -63,18 +65,21 @@ class GenerateWindow(tk.Toplevel):
         # Create Widgets
         self.method_label = tk.Label(self, text='Method')
         self.method_combo = ttk.Combobox(
-            self, values=[MazeGenMethods.RDFS, MazeGenMethods.RPA], state='readonly'
+            self, values=[MazeGenMethods.RDFS,
+                          MazeGenMethods.RPA], state='readonly'
         )
         self.method_combo.current(0)
         self.height_label = tk.Label(self, text='Maze Height')
         self.height_input = tk.Entry(self)
-        self.height_input.insert(0, 75)
+        self.height_input.insert(0, 105)
         self.width_label = tk.Label(self, text='Maze Width')
         self.width_input = tk.Entry(self)
         self.width_input.insert(0, 105)
         self.help_button = tk.Button(self, text='Help')
-        self.gen_button = tk.Button(self, text='Generate', command=self.on_generate)
-        self.cancel_button = tk.Button(self, text='Cancel', command=self.on_cancel)
+        self.gen_button = tk.Button(
+            self, text='Generate', command=self.on_generate)
+        self.cancel_button = tk.Button(
+            self, text='Cancel', command=self.on_cancel)
 
         # Grid Widgets
         self.method_label.grid(row=0, column=0)
@@ -88,7 +93,7 @@ class GenerateWindow(tk.Toplevel):
         self.help_button.grid(row=4, column=0, columnspan=2)
 
         self.grab_set()
-    
+
     def on_generate(self):
         self.method = self.method_combo.get()
         try:
@@ -104,7 +109,8 @@ class GenerateWindow(tk.Toplevel):
 
     def on_cancel(self):
         self.destroy()
-    
+
+
 class SolveWindow(tk.Toplevel):
     def __init__(self, master, **kwargs):
         self.solve = False
@@ -116,12 +122,14 @@ class SolveWindow(tk.Toplevel):
         # Create Widgets
         self.method_label = tk.Label(self, text='Method')
         self.method_combo = ttk.Combobox(
-            self, values=[MazeSolverMethods.DFS, MazeSolverMethods.BFS], state='readonly'
+            self, values=[MazeSolverMethods.DFS, MazeSolverMethods.BFS,
+                          MazeSolverMethods.UCS, MazeSolverMethods.ASTAR], state='readonly'
         )
         self.method_combo.current(0)
         self.help_button = tk.Button(self, text='Help')
         self.gen_button = tk.Button(self, text='Solve', command=self.on_solve)
-        self.cancel_button = tk.Button(self, text='Cancel', command=self.on_cancel)
+        self.cancel_button = tk.Button(
+            self, text='Cancel', command=self.on_cancel)
 
         # Grid Widgets
         self.method_label.grid(row=0, column=0)
@@ -131,7 +139,7 @@ class SolveWindow(tk.Toplevel):
         self.help_button.grid(row=2, column=0, columnspan=2)
 
         self.grab_set()
-    
+
     def on_solve(self):
         self.method = self.method_combo.get()
         self.solve = True

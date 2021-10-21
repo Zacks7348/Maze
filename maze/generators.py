@@ -143,16 +143,23 @@ class RPAMazeGenerator(MazeGenerator):
         wall = self.frontier.pop(random.randint(0, len(self.frontier)-1))
         self.frontier_set.remove(wall)
         neighbors = self.maze.get_neighboring_cells(wall, d=2)
+        # random.shuffle(neighbors)
+        # for n in neighbors:
+        #     if self.maze.is_passage(n):
+        #         o = self.opposite_cell(wall, n)
+        #         if self.maze.is_valid_cell(o):
+        #             if self.maze.is_wall(o):
+        #                 middle = self.middle_cell(wall, n)
+        #                 add(wall, middle, n)
+        #                 return (wall, middle, n)
+        #         else:
+        #             middle = self.middle_cell(wall, n)
+        #             add(wall, middle, n)
+        #             return (wall, middle, n)
         random.shuffle(neighbors)
         for n in neighbors:
             if self.maze.is_passage(n):
-                o = self.opposite_cell(wall, n)
-                if self.maze.is_valid_cell(o):
-                    if self.maze.is_wall(o):
-                        middle = self.middle_cell(wall, n)
-                        add(wall, middle, n)
-                        return (wall, middle, n)
-                else:
-                    middle = self.middle_cell(wall, n)
-                    add(wall, middle, n)
-                    return (wall, middle, n)
+                middle = self.middle_cell(wall, n)
+                add(wall, middle, n)
+                return (wall, middle, n)
+        return None

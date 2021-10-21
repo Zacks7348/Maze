@@ -2,7 +2,8 @@ import tkinter as tk
 
 from maze import Maze, Cell, CellType 
 from maze import MazeGenMethods, RPAMazeGenerator, RDFSMazeGenerator
-from maze import MazeSolverMethods, DFSMazeSolver, BFSMazeSolver
+from maze import MazeSolverMethods, DFSMazeSolver, BFSMazeSolver, UCSMazeSolver
+from maze.solvers import ASTARMazeSolver
 
 MARGIN = 20
 SIZE = 10
@@ -54,10 +55,16 @@ class MazeCanvas(tk.Canvas):
         self.__draw_cell(self.maze.finish_pos)
 
     def solve(self, method):
+        self.__clear_traversal_cells()
+        self.__clear_solution_cells()
         if method == MazeSolverMethods.DFS:
             s = DFSMazeSolver(self.maze, step=True)
         elif method == MazeSolverMethods.BFS:
             s = BFSMazeSolver(self.maze, step=True)
+        elif method == MazeSolverMethods.UCS:
+            s = UCSMazeSolver(self.maze, step=True)
+        elif method == MazeSolverMethods.ASTAR:
+            s = ASTARMazeSolver(self.maze, step=True)
         else:
             raise ValueError('Invalid method')
 
@@ -134,10 +141,18 @@ class MazeCanvas(tk.Canvas):
     def __clear_cells(self):
         for c in self.cells:
             self.delete(c)
+        self.__clear_traversal_cells()
+        self.__clear_solution_cells()
+    
+    def __clear_traversal_cells(self):
         for c in self.traversed_cells:
             self.delete(c)
+        self.traversed_cells.clear()
+    
+    def __clear_solution_cells(self):
         for c in self.solution:
             self.delete(c)
+        self.solution.clear()
     
     def __cell_2_coords(self, c: Cell):
         x1 = self.margin + (self.col_width * c.col)
