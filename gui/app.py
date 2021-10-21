@@ -9,15 +9,15 @@ class App():
         # Configure root
         self.root = tk.Tk()
         self.root.title('PyMaze')
-        self.root.geometry('1000x800')
-        self.root.minsize(1000, 800)
+        self.root.geometry('800x700')
+        self.root.minsize(800, 700)
 
         # Configure wdigets
         self.maze = MazeCanvas(
             self.root,
             margin=20,
-            width=1000,
-            height=800)
+            width=800,
+            height=700)
         self.maze.pack(fill=tk.BOTH, side=tk.TOP)
 
         self.menu = MainMenu(self.root, self.maze)

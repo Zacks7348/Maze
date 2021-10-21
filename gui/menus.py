@@ -116,7 +116,7 @@ class SolveWindow(tk.Toplevel):
         # Create Widgets
         self.method_label = tk.Label(self, text='Method')
         self.method_combo = ttk.Combobox(
-            self, values=[MazeSolverMethods.DFS], state='readonly'
+            self, values=[MazeSolverMethods.DFS, MazeSolverMethods.BFS], state='readonly'
         )
         self.method_combo.current(0)
         self.help_button = tk.Button(self, text='Help')

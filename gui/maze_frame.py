@@ -2,7 +2,7 @@ import tkinter as tk
 
 from maze import Maze, Cell, CellType 
 from maze import MazeGenMethods, RPAMazeGenerator, RDFSMazeGenerator
-from maze import MazeSolverMethods, DFSMazeSolver
+from maze import MazeSolverMethods, DFSMazeSolver, BFSMazeSolver
 
 MARGIN = 20
 SIZE = 10
@@ -56,6 +56,8 @@ class MazeCanvas(tk.Canvas):
     def solve(self, method):
         if method == MazeSolverMethods.DFS:
             s = DFSMazeSolver(self.maze, step=True)
+        elif method == MazeSolverMethods.BFS:
+            s = BFSMazeSolver(self.maze, step=True)
         else:
             raise ValueError('Invalid method')
 
