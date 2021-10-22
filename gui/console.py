@@ -12,7 +12,7 @@ class MazeConsole(tk.Frame):
             state='disabled'
         )
         self.console.pack(anchor='nw', fill='both', expand=True)
-        self.console.tag_config('info', foreground='lime green')
+        self.console.tag_config('info', foreground='black')
         self.console.tag_config('warning', foreground='orange')
         self.console.tag_config('error', foreground='red2')
     

@@ -13,9 +13,13 @@ class MazeGenerator:
         self.height = kwargs.pop('height', 105)
         if self.height % 2 == 0:
             raise ValueError('Maze height must be odd!')
+        if self.height <= 3:
+            raise ValueError('Maze height must be greater than 3')
         self.width = kwargs.pop('width', 105)
         if self.width % 2 == 0:
             raise ValueError('Maze width must be odd!')
+        if self.width <= 3:
+            raise ValueError('Maze width must be greater than 3')
         self.frontier = None
         self.finished = False
 
@@ -54,8 +58,8 @@ class MazeGenerator:
         if not 0 <= chance <= 1:
             raise ValueError('Loop chance must be a number between 0 and 1!')
         changed = []
-        for i in range(1, self.maze.height-1):
-            for j in range(1, self.maze.width-1):
+        for i in range(2, self.maze.height-2, 2):
+            for j in range(2, self.maze.width-2, 2):
                 c = Cell(i, j)
                 if self.maze.is_wall(c) and random.random() < chance:
                     self.maze.set(c, CellType.PASSAGE)
@@ -69,22 +73,16 @@ class RDFSMazeGenerator(MazeGenerator):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        height = kwargs.pop('height', 25)
-        if height % 2 == 0:
-            raise ValueError('Height must be odd!')
-        width = kwargs.pop('width', 55)
-        if width % 2 == 0:
-            raise ValueError('Width must be odd!')
 
         # Initialize maze as a grid of walls
         m = [[CellType.WALL for _ in range(
-            width)] for _ in range(height)]
+            self.width)] for _ in range(self.height)]
 
         self.maze = Maze(m)
         self.frontier = []
 
         # Randomly choose starting point
-        self.maze.start_pos = self.random_cell(height, width, is_odd=True)
+        self.maze.start_pos = self.random_cell(self.height, self.width, is_odd=True)
         self.maze.set(self.maze.start_pos, CellType.PASSAGE)
         self.frontier.append(self.maze.start_pos)
 
@@ -118,22 +116,16 @@ class RPAMazeGenerator(MazeGenerator):
     """
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        height = kwargs.pop('height', 25)
-        if height % 2 == 0:
-            raise ValueError('Height must be odd!')
-        width = kwargs.pop('width', 55)
-        if width % 2 == 0:
-            raise ValueError('Width must be odd!')
         
         # Initialize maze as a grid of walls
         m = [[CellType.WALL for _ in range(
-            width)] for _ in range(height)]
+            self.width)] for _ in range(self.height)]
         
         self.maze = Maze(m)
         self.frontier = []
         self.frontier_set = set()
 
-        self.maze.start_pos = self.random_cell(height-1, width-1, is_odd=True)
+        self.maze.start_pos = self.random_cell(self.height, self.width, is_odd=True)
         self.maze.set(self.maze.start_pos, CellType.PASSAGE)
         for n in self.maze.get_neighboring_walls(self.maze.start_pos, d=2):
             self.frontier.append(n)

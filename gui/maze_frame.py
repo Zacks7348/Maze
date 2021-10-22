@@ -1,4 +1,5 @@
 import tkinter as tk
+from gui import console
 
 from maze import Maze, Cell, CellType 
 from maze import MazeGenMethods, RPAMazeGenerator, RDFSMazeGenerator
@@ -39,23 +40,27 @@ class MazeCanvas(tk.Canvas):
         self.console.info('Clearing board...')
         self.__clear_cells()
         self.console.info('Initialzing generator...')
-        if method == MazeGenMethods.RDFS:
-            g = RDFSMazeGenerator(height=height, width=width, step=True)
-        elif method == MazeGenMethods.RPA:
-            g = RPAMazeGenerator(height=height, width=width, step=True)
-        else:
-            raise ValueError('Invalid method')
-        self.maze = g.maze
-        self.console.info(f'Drawing initial maze (hxw) ({height}x{width})...')
-        self.__draw_maze()
-        self.__draw_cells()
+        try:
+            if method == MazeGenMethods.RDFS:
+                g = RDFSMazeGenerator(height=height, width=width, step=True)
+            elif method == MazeGenMethods.RPA:
+                g = RPAMazeGenerator(height=height, width=width, step=True)
+            else:
+                raise ValueError('Invalid method')
+            self.maze = g.maze
+            self.console.info(f'Drawing initial maze (hxw) ({height}x{width})...')
+            self.__draw_maze()
+            self.__draw_cells()
 
-        self.console.info('Generating...')
-        while not g.finished:
-            cells = g.step()
-            if cells:
-                self.__update_cells(cells)
-            self.update()
+            self.console.info('Generating...')
+            while not g.finished:
+                cells = g.step()
+                if cells:
+                    self.__update_cells(cells)
+                self.update()
+        except Exception as e:
+            self.console.error(str(e))
+            return
         
         self.console.info('Finished!')
         self.console.info('Drawing start and finish...')
@@ -64,7 +69,11 @@ class MazeCanvas(tk.Canvas):
         self.__draw_cell(self.maze.finish_pos)
         self.update()
         self.console.info('Loopifying maze...')
-        np = g.loopify(chance=loop)
+        try:
+            np = g.loopify(chance=loop)
+        except Exception as e:
+            self.console.error(str(e))
+            return
         self.__update_cells(np)
         self.update()
         self.console.info('Maze generated!')

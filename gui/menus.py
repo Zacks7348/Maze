@@ -6,8 +6,9 @@ from maze import MazeGenMethods, MazeSolverMethods
 
 
 class MainMenu(tk.Menu):
-    def __init__(self, master: tk.Tk, maze: MazeCanvas):
+    def __init__(self, master: tk.Tk, maze: MazeCanvas, console):
         self.maze = maze
+        self.console = console
         super().__init__(master, tearoff=False)
         self.master.config(menu=self)
 
@@ -20,7 +21,7 @@ class MainMenu(tk.Menu):
         self.add_command(label='Solve', command=self.on_solve)
 
     def on_generate(self):
-        g = GenerateWindow(self)
+        g = GenerateWindow(self, self.console)
         self.wait_window(g)
         if not g.generate:
             return
@@ -53,12 +54,13 @@ class EditMenu(tk.Menu):
 
 
 class GenerateWindow(tk.Toplevel):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, console, **kwargs):
         self.generate = False
         self.method = None
         self.height = None
         self.width = None
         self.loop = None
+        self.console = console
         super().__init__(master, **kwargs)
         self.resizable(False, False)
         self.title('Generate Maze')
@@ -105,15 +107,18 @@ class GenerateWindow(tk.Toplevel):
         try:
             self.height = int(self.height_input.get())
         except:
-            raise ValueError('Expected integer for height')
+            self.console.error('Maze height must be an integer')
+            return
         try:
             self.width = int(self.width_input.get())
         except:
-            raise ValueError('Expected integer for width')
+            self.console.error('Maze width must be an integer')
+            return
         try:
             self.loop = float(self.loop_input.get())
         except:
-            raise ValueError('Expected float for loop chance')
+            self.console.error('Loop chance must be a decimal')
+            return
         self.generate = True
         self.destroy()
 

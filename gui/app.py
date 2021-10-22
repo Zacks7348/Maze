@@ -26,7 +26,7 @@ class App():
         self.maze.grid(row=1, column=0)
         self.console.grid(row=1, column=1)
 
-        self.menu = MainMenu(self.root, self.maze)
+        self.menu = MainMenu(self.root, self.maze, self.console)
     
     def run(self):
         """
