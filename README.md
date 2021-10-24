@@ -28,14 +28,17 @@ and A* search algorithms.
 
 ## Table of Contents
 **[Maze Implementation](#maze-implementation)**<br>
+
 **[Maze Generation](#maze-generation)**<br>
 * **[Randomized Depth-First Search](#randomized-depth-first-search)**<br>
 * **[Randomized Prim's Algorithm](#randomized-prim's-algorithm)**<br>
+
 **[Maze Solving](#maze-solving)**<br>
 * **[Depth-First Search](#depth-first-search)**<br>
 * **[Breadth-First Search](#breadth-first-search)**<br>
 * **[Uniform-Cost Search](#uniform-cost-search)**<br>
 * **[A* Search](#a*-search)**<br>
+
 **[TODO][#todo]**<br>
 
 ## Maze Implementation
