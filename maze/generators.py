@@ -62,8 +62,12 @@ class MazeGenerator:
             for j in range(2, self.maze.width-2, 2):
                 c = Cell(i, j)
                 if self.maze.is_wall(c) and random.random() < chance:
-                    self.maze.set(c, CellType.PASSAGE)
-                    changed.append(c)
+                    for n in self.maze.get_neighboring_passages(c):
+                        o = self.opposite_cell(c, n)
+                        if self.maze.is_passage(o):
+                            self.maze.set(c, CellType.PASSAGE)
+                            changed.append(c)
+                            break
         return changed
 
 class RDFSMazeGenerator(MazeGenerator):

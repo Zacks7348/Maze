@@ -80,6 +80,9 @@ class MazeCanvas(tk.Canvas):
 
 
     def solve(self, method):
+        if not self.maze:
+            self.console.error('Must generate a maze to use search algorithms!')
+            return
         self.console.info(f'Solving maze using {method} method...')
         self.console.info('Initialzing search algorithm...')
         self.__clear_traversal_cells()
@@ -160,7 +163,7 @@ class MazeCanvas(tk.Canvas):
         x1, y1, x2, y2 = self.__cell_2_coords(cell)
         if cell == self.maze.start_pos:
             self.cells.append(
-                self.create_rectangle(x1, y1, x2, y2, fill='green')
+                self.create_rectangle(x1, y1, x2, y2, fill='springgreen2')
             )
         elif cell == self.maze.finish_pos:
             self.cells.append(
