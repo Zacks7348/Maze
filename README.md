@@ -68,7 +68,7 @@ the get_neighboring_cells(c) function, which returns a list of all the cells
 adjacent to cell c. Since search algorithms work with graph-like structures, we can
 treat cells as graph nodes where instead of storing children cells in the Cell object 
 itself, the children can accessed through this function. You can look at the
-Maze class [here][maze/maze.py] to learn more.
+Maze class in maze/maze.py to learn more.
 
 ## Maze Generation
 The following are quick summaries of the implemented maze generation algorithms.
