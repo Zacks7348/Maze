@@ -146,9 +146,9 @@ direction of the finish cell.
 * Add Images and GIFS to the README
 * Add option to choose heuristic for A* Search Algorithm in GUI
 * Implemented more algorithms:
-* * Randomized Kruskals Algorithm
-* * Wilson's Algorithm
-* * Aldous-Broder Algorithm
+    * Randomized Kruskals Algorithm
+    * Wilson's Algorithm
+    * Aldous-Broder Algorithm
 
 <!-- References -->
 [rdfs]: https://en.wikipedia.org/wiki/Maze_generation_algorithm
