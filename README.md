@@ -39,7 +39,7 @@ and A* search algorithms.
 * **[Uniform-Cost Search](#uniform-cost-search)**<br>
 * **[A* Search](#a*-search)**<br>
 
-**[TODO][#todo]**<br>
+**[TODO](#todo)**<br>
 
 ## Maze Implementation
 At its core, a maze is simply a n-dimensional list of cells, usually a 2D 
