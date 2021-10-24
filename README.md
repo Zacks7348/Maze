@@ -145,7 +145,7 @@ direction of the finish cell.
 ## TODO
 * Add Images and GIFS to the README
 * Add option to choose heuristic for A* Search Algorithm in GUI
-* Implemented more algorithms:
+* Implement more algorithms:
     * Randomized Kruskals Algorithm
     * Wilson's Algorithm
     * Aldous-Broder Algorithm
