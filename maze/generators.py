@@ -23,15 +23,22 @@ class MazeGenerator:
         self.frontier = None
         self.finished = False
 
-    def randomized_finish(self):
+    def randomized_start_finish(self):
         """
         Randomly choose finish cell
         """
 
+        s = self.random_cell(self.maze.height, self.maze.width, is_odd=True)
+        while self.maze.is_wall(s):
+            s = self.random_cell(self.maze.height, self.maze.width, is_odd=True)
+        self.maze.start_pos = s
+        self.maze.set(s, CellType.START)
+
         f = self.random_cell(self.maze.height, self.maze.width, is_odd=True)
-        while self.maze.is_wall(f):
+        while self.maze.is_wall(f) or f == self.maze.start_pos:
             f = self.random_cell(self.maze.height, self.maze.width, is_odd=True)
         self.maze.finish_pos = f
+        self.maze.set(f, CellType.FINISH)
     
     def random_cell(self, max_row: int, max_col: int, is_odd: bool = False):
         row = random.randint(0, max_row-1)
@@ -86,9 +93,8 @@ class RDFSMazeGenerator(MazeGenerator):
         self.frontier = []
 
         # Randomly choose starting point
-        self.maze.start_pos = self.random_cell(self.height, self.width, is_odd=True)
-        self.maze.set(self.maze.start_pos, CellType.PASSAGE)
-        self.frontier.append(self.maze.start_pos)
+        start = self.random_cell(self.height, self.width, is_odd=True)
+        self.frontier.append(start)
 
         if self.step_mode:
             return
@@ -129,9 +135,9 @@ class RPAMazeGenerator(MazeGenerator):
         self.frontier = []
         self.frontier_set = set()
 
-        self.maze.start_pos = self.random_cell(self.height, self.width, is_odd=True)
-        self.maze.set(self.maze.start_pos, CellType.PASSAGE)
-        for n in self.maze.get_neighboring_walls(self.maze.start_pos, d=2):
+        start = self.random_cell(self.height, self.width, is_odd=True)
+        self.maze.set(start, CellType.PASSAGE)
+        for n in self.maze.get_neighboring_walls(start, d=2):
             self.frontier.append(n)
             self.frontier_set.add(n)
 
