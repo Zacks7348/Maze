@@ -1,26 +1,20 @@
 import tkinter as tk
 from gui import console
 
+from gui.states import AppState
 from maze import Maze, Cell, CellType 
 from maze import MazeGenMethods, RPAMazeGenerator, RDFSMazeGenerator
 from maze import MazeSolverMethods, DFSMazeSolver, BFSMazeSolver, UCSMazeSolver
 from maze.solvers import ASTARMazeSolver
 
-MARGIN = 20
-SIZE = 10
-MAZE_HEIGHT = 70
-MAZE_WIDTH = 100
-HEIGHT = MARGIN * 2 + SIZE * MAZE_HEIGHT
-WIDTH = MARGIN * 2 + SIZE * MAZE_WIDTH
-
-
 class MazeCanvas(tk.Canvas):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, app, **kwargs):
         self.margin = kwargs.pop('margin', 20)
         self.height = kwargs.get('height')
         self.width = kwargs.get('width')
         self.console = kwargs.pop('console', None)
         self.maze: Maze = None
+        self.app = app
 
         self.row_lines = []
         self.col_lines = []
@@ -34,7 +28,26 @@ class MazeCanvas(tk.Canvas):
         # Init UI
         self.__draw_border()
 
+    def open_maze(self, file_dir):
+        try:
+            self.app.change_state(AppState.GENERATING)
+            self.console.info(f'Opening {file_dir}...')
+            self.maze = Maze.from_file(file_dir)
+            self.console.info('Clearing board...')
+            self.__clear_cells()
+            self.update()
+            self.console.info('Drawing maze...')
+            self.__draw_maze()
+            self.update()
+            self.__draw_cells()
+            self.update()
+            self.console.info('Done!')
+            self.app.change_state(AppState.MAZE)
+        except Exception as e:
+            self.console.error(str(e))
+
     def generate(self, method, height, width, loop):
+        self.app.change_state(AppState.GENERATING)
         self.console.clear()
         self.console.info(f'Generating maze using {method} method...')
         self.console.info('Clearing board...')
@@ -46,6 +59,7 @@ class MazeCanvas(tk.Canvas):
             elif method == MazeGenMethods.RPA:
                 g = RPAMazeGenerator(height=height, width=width, step=True)
             else:
+                self.app.revert_state()
                 raise ValueError('Invalid method')
             self.maze = g.maze
             self.console.info(f'Drawing initial maze (hxw) ({height}x{width})...')
@@ -60,11 +74,12 @@ class MazeCanvas(tk.Canvas):
                 self.update()
         except Exception as e:
             self.console.error(str(e))
+            self.app.revert_state()
             return
         
         self.console.info('Finished!')
         self.console.info('Drawing start and finish...')
-        g.randomized_finish()
+        g.randomized_start_finish()
         self.__draw_cell(self.maze.start_pos)
         self.__draw_cell(self.maze.finish_pos)
         self.update()
@@ -73,15 +88,19 @@ class MazeCanvas(tk.Canvas):
             np = g.loopify(chance=loop)
         except Exception as e:
             self.console.error(str(e))
+            self.app.revert_state()
             return
         self.__update_cells(np)
         self.update()
         self.console.info('Maze generated!')
+        self.app.change_state(AppState.MAZE)
 
 
     def solve(self, method):
+        self.app.change_state(AppState.SOLVING)
         if not self.maze:
             self.console.error('Must generate a maze to use search algorithms!')
+            self.app.revert_state()
             return
         self.console.info(f'Solving maze using {method} method...')
         self.console.info('Initialzing search algorithm...')
@@ -96,6 +115,7 @@ class MazeCanvas(tk.Canvas):
         elif method == MazeSolverMethods.ASTAR:
             s = ASTARMazeSolver(self.maze, step=True)
         else:
+            self.app.revert_state()
             raise ValueError('Invalid method')
 
         self.console.info('Solving maze...')
@@ -122,6 +142,7 @@ class MazeCanvas(tk.Canvas):
             self.console.info(f'  Solution Cost: {s.solution_cost}')
         else:
             self.console.info('No solution found!')
+        self.app.change_state(AppState.MAZE)
 
 
     def __draw_border(self):
