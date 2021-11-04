@@ -8,6 +8,10 @@ class MazeSolverMethods:
     UCS = 'UCS'
     ASTAR = 'ASTAR'
 
+class HeuristicMethods:
+    EUCLIDIAN = 'Euclidian'
+    MANHATTAN = 'Manhattan'
+
 
 class MazeSolver:
     """

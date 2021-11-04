@@ -2,9 +2,7 @@ import tkinter as tk
 
 from gui.maze_frame import MazeCanvas
 from gui.menus import MainMenu
-from gui.console import MazeConsole
 from gui.states import AppState
-
 
 
 class App():
@@ -12,26 +10,25 @@ class App():
         # Configure root
         self.root = tk.Tk()
         self.root.title('PyMaze')
-        self.root.geometry('800x700')
-        self.root.minsize(1500, 700)
+        self.root.geometry('700x700')
+        self.root.minsize(700, 700)
+        self.root.maxsize(700, 700)
         self.prev_state = None
         self.state = None
 
         # Configure wdigets
-        self.console = MazeConsole(self.root)
         self.maze = MazeCanvas(
             self.root,
             self,
             margin=20,
-            width=800,
+            width=700,
             height=700,
-            console=self.console)
+        )
 
-        self.maze.grid(row=1, column=0)
-        self.console.grid(row=1, column=1)
+        self.maze.pack(side=tk.TOP)
 
-        self.menu = MainMenu(self.root, self, self.maze, self.console)
-    
+        self.menu = MainMenu(self.root, self)
+
     def change_state(self, state: AppState) -> None:
         if state == self.state:
             return
@@ -54,15 +51,14 @@ class App():
             raise ValueError(f'Invalid App State: {state}')
         self.prev_state = self.state
         self.state = state
-    
+
     def revert_state(self):
         self.change_state(self.prev_state)
-
 
     def run(self):
         """
         Starts the GUI application. 
-        
+
         This is a blocking call that returns when the application is closed
         """
         self.change_state(AppState.HOME)

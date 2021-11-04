@@ -1,5 +1,4 @@
 import tkinter as tk
-from gui import console
 
 from gui.states import AppState
 from maze import Maze, Cell, CellType 
@@ -12,7 +11,6 @@ class MazeCanvas(tk.Canvas):
         self.margin = kwargs.pop('margin', 20)
         self.height = kwargs.get('height')
         self.width = kwargs.get('width')
-        self.console = kwargs.pop('console', None)
         self.maze: Maze = None
         self.app = app
 
@@ -31,28 +29,21 @@ class MazeCanvas(tk.Canvas):
     def open_maze(self, file_dir):
         try:
             self.app.change_state(AppState.GENERATING)
-            self.console.info(f'Opening {file_dir}...')
             self.maze = Maze.from_file(file_dir)
-            self.console.info('Clearing board...')
             self.__clear_cells()
             self.update()
-            self.console.info('Drawing maze...')
             self.__draw_maze()
             self.update()
             self.__draw_cells()
             self.update()
-            self.console.info('Done!')
             self.app.change_state(AppState.MAZE)
         except Exception as e:
-            self.console.error(str(e))
+            #self.console.error(str(e))
+            pass
 
     def generate(self, method, height, width, loop):
         self.app.change_state(AppState.GENERATING)
-        self.console.clear()
-        self.console.info(f'Generating maze using {method} method...')
-        self.console.info('Clearing board...')
         self.__clear_cells()
-        self.console.info('Initialzing generator...')
         try:
             if method == MazeGenMethods.RDFS:
                 g = RDFSMazeGenerator(height=height, width=width, step=True)
@@ -62,48 +53,38 @@ class MazeCanvas(tk.Canvas):
                 self.app.revert_state()
                 raise ValueError('Invalid method')
             self.maze = g.maze
-            self.console.info(f'Drawing initial maze (hxw) ({height}x{width})...')
             self.__draw_maze()
             self.__draw_cells()
 
-            self.console.info('Generating...')
             while not g.finished:
                 cells = g.step()
                 if cells:
                     self.__update_cells(cells)
                 self.update()
         except Exception as e:
-            self.console.error(str(e))
             self.app.revert_state()
             return
         
-        self.console.info('Finished!')
-        self.console.info('Drawing start and finish...')
         g.randomized_start_finish()
         self.__draw_cell(self.maze.start_pos)
         self.__draw_cell(self.maze.finish_pos)
         self.update()
-        self.console.info('Loopifying maze...')
         try:
             np = g.loopify(chance=loop)
         except Exception as e:
-            self.console.error(str(e))
+            # self.console.error(str(e))
             self.app.revert_state()
             return
         self.__update_cells(np)
         self.update()
-        self.console.info('Maze generated!')
         self.app.change_state(AppState.MAZE)
 
 
-    def solve(self, method):
+    def solve(self, method, heuristic):
         self.app.change_state(AppState.SOLVING)
         if not self.maze:
-            self.console.error('Must generate a maze to use search algorithms!')
             self.app.revert_state()
             return
-        self.console.info(f'Solving maze using {method} method...')
-        self.console.info('Initialzing search algorithm...')
         self.__clear_traversal_cells()
         self.__clear_solution_cells()
         if method == MazeSolverMethods.DFS:
@@ -118,7 +99,6 @@ class MazeCanvas(tk.Canvas):
             self.app.revert_state()
             raise ValueError('Invalid method')
 
-        self.console.info('Solving maze...')
         while not s.finished:
             cells = s.step()
             if cells:
@@ -127,21 +107,19 @@ class MazeCanvas(tk.Canvas):
                         x1, y1, x2, y2 = self.__cell_2_coords(c)
                         self.traversed_cells.append(self.create_rectangle(x1, y1, x2, y2, fill='yellow'))
                 self.update()
-        self.console.info('Search algorithm finished!')
         if s.solution:
-            self.console.info('Found a solution!')
-            self.console.info('Drawing solution...')
             for c in s.solution:
                 if c != self.maze.start_pos and c != self.maze.finish_pos:
                     x1, y1, x2, y2 = self.__cell_2_coords(c)
                     self.solution.append(self.create_rectangle(x1, y1, x2, y2, fill='blue'))
                     self.update()
-            self.console.info('Done!')
-            self.console.info('Search results:')
-            self.console.info(f'  Nodes Expanded: {s.nodes_expanded}')
-            self.console.info(f'  Solution Cost: {s.solution_cost}')
+            # self.console.info('Done!')
+            # self.console.info('Search results:')
+            # self.console.info(f'  Nodes Expanded: {s.nodes_expanded}')
+            # self.console.info(f'  Solution Cost: {s.solution_cost}')
         else:
-            self.console.info('No solution found!')
+            # self.console.info('No solution found!')
+            pass
         self.app.change_state(AppState.MAZE)
 
 
