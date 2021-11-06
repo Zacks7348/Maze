@@ -26,7 +26,7 @@ Generators can be ran in 2 modes:
 
 import random
 
-from maze.maze import Maze, Cell, CellType
+from pymaze.maze import Maze, Cell, CellType
 
 class MazeGenMethods:
     RDFS = 'RDFS'

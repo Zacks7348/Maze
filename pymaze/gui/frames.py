@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
-from maze import MazeGenMethods, MazeSolverMethods, HeuristicMethods
+from pymaze.generators import MazeGenMethods
+from pymaze.solvers import MazeSolverMethods, HeuristicMethods
 
 class ActionBaseWindow(tk.Toplevel):
     def __init__(self, master, **kwargs):

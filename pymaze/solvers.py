@@ -1,5 +1,5 @@
-from maze.maze import Maze, Cell
-from maze.utils import PriorityQueue, heuristic
+from pymaze.maze import Maze, Cell
+from pymaze.utils import PriorityQueue, heuristic
 
 
 class MazeSolverMethods:

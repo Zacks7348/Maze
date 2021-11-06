@@ -1,8 +1,8 @@
 import tkinter as tk
 
-from gui.maze_frame import MazeCanvas
-from gui.menus import MainMenu
-from gui.states import AppState
+from pymaze.gui.maze_frame import MazeCanvas
+from pymaze.gui.menus import MainMenu
+from pymaze.gui.states import AppState
 
 
 class App():

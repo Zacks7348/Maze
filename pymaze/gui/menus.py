@@ -3,9 +3,8 @@ from tkinter import ttk
 import tkinter.filedialog as filedialog
 import os
 
-from maze import MazeGenMethods, MazeSolverMethods, Maze
-from gui.states import AppState
-from gui.frames import GenerateWindow, SolveWindow
+from pymaze.gui.states import AppState
+from pymaze.gui.frames import GenerateWindow, SolveWindow
 
 
 class MainMenu(tk.Menu):
